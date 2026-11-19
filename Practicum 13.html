@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Bridge - Task Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #0d1b2a;
+            color: #e0e1dd;
+        }
+
+        /* Flexbox navigation bar (from Practicum 6) */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: #1b263b;
+            padding: 15px 40px;
+            border-bottom: 2px solid #00b4d8;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #00b4d8;
+        }
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+            flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links li a {
+            text-decoration: none;
+            color: #e0e1dd;
+            font-size: 16px;
+        }
+        .nav-links li a:hover {
+            color: #90e0ef;
+        }
+
+        /* Section heading */
+        .task-heading {
+            text-align: center;
+            margin-top: 100px;
+            color: #00b4d8;
+        }
+        .task-heading p {
+            color: #e0e1dd;
+            font-size: 14px;
+        }
+
+        .task-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 40px 60px;
+        }
+
+        /* Add-task box */
+        .add-box {
+            background-color: #1b263b;
+            border: 1px solid #00b4d8;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .add-box h3 {
+            color: #00b4d8;
+            margin-top: 0;
+        }
+        .add-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .add-row input {
+            flex: 1;
+            min-width: 180px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00b4d8;
+            background-color: #0d1b2a;
+            color: #e0e1dd;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .add-row button {
+            background-color: #00b4d8;
+            color: #0d1b2a;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .add-row button:hover {
+            background-color: #90e0ef;
+        }
+        .error-msg {
+            display: block;
+            min-height: 16px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #ff6b6b;
+        }
+
+        /* Task list box */
+        .list-box {
+            background-color: #1b263b;
+            border: 1px solid #00b4d8;
+            border-radius: 8px;
+            padding: 25px;
+        }
+        .list-box h3 {
+            margin-top: 0;
+            color: #00b4d8;
+        }
+        #task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #task-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #0d1b2a;
+        }
+        #task-list li:last-child {
+            border-bottom: none;
+        }
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+            word-break: break-word;
+        }
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #577590;
+        }
+        .task-edit-input {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 5px;
+            border: 1px solid #00b4d8;
+            background-color: #0d1b2a;
+            color: #e0e1dd;
+            font-size: 14px;
+        }
+        .task-btn {
+            background-color: transparent;
+            color: #90e0ef;
+            border: 1px solid #00b4d8;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .task-btn:hover {
+            background-color: #00b4d8;
+            color: #0d1b2a;
+        }
+        .task-btn.delete-btn:hover {
+            background-color: #ff6b6b;
+            border-color: #ff6b6b;
+            color: #0d1b2a;
+        }
+        #empty-msg {
+            font-size: 14px;
+            color: #90e0ef;
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 15px 20px;
+            }
+            .task-container {
+                padding: 15px 20px 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Block Bridge</div>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="https://aboutus.com">About Us</a></li>
+            <li><a href="https://ourwebsite.com">Our Website</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div class="task-heading">
+        <h2>Task Manager</h2>
+        <p>Add, edit, complete and delete tasks using JavaScript</p>
+    </div>
+
+    <div class="task-container">
+
+        <div class="add-box">
+            <h3>Add a Task</h3>
+            <div class="add-row">
+                <input type="text" id="task-input" placeholder="Enter a new task">
+                <button id="add-btn" onclick="addTask()">Add</button>
+            </div>
+            <span class="error-msg" id="task-error"></span>
+        </div>
+
+        <div class="list-box">
+            <h3>Your Tasks</h3>
+            <ul id="task-list"></ul>
+            <p id="empty-msg">No tasks yet. Add one above.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Selecting DOM elements
+        const taskInput = document.getElementById('task-input');
+        const taskError = document.getElementById('task-error');
+        const taskList = document.getElementById('task-list');
+        const emptyMsg = document.getElementById('empty-msg');
+
+        // 2. The tasks array — the single source of truth (CRUD target)
+        let tasks = [];
+        let nextId = 1;
+
+        // 3. Load any saved tasks from localStorage on page load
+        function loadTasks() {
+            const saved = localStorage.getItem('blockBridgeTasks');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                tasks = parsed.tasks;
+                nextId = parsed.nextId;
+            }
+        }
+
+        // 4. Save the current tasks array to localStorage
+        function saveTasks() {
+            localStorage.setItem('blockBridgeTasks', JSON.stringify({ tasks: tasks, nextId: nextId }));
+        }
+
+        // 5. CREATE — add a new task to the array
+        function addTask() {
+            const value = taskInput.value.trim();
+            taskError.textContent = '';
+
+            if (value === '') {
+                taskError.textContent = 'Please enter a task before adding.';
+                return;
+            }
+
+            tasks.push({ id: nextId, text: value, completed: false, editing: false });
+            nextId++;
+
+            taskInput.value = '';
+            saveTasks();
+            renderTasks();
+        }
+
+        // Allow pressing Enter to add a task too
+        taskInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // 6. UPDATE — toggle a task's completed state
+        function toggleComplete(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        // 7. UPDATE — switch a task into edit mode
+        function startEdit(id) {
+            tasks.forEach(t => { t.editing = (t.id === id); });
+            renderTasks();
+        }
+
+        // 8. UPDATE — save the edited text back into the array
+        function saveEdit(id, newValue) {
+            const value = newValue.trim();
+            const task = tasks.find(t => t.id === id);
+            if (task && value !== '') {
+                task.text = value;
+                task.editing = false;
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        // 9. DELETE — remove a task from the array
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        // 10. READ — render the current tasks array to the DOM
+        function renderTasks() {
+            taskList.innerHTML = '';
+
+            if (tasks.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            tasks.forEach(function (task) {
+                const li = document.createElement('li');
+
+                if (task.editing) {
+                    const editInput = document.createElement('input');
+                    editInput.type = 'text';
+                    editInput.className = 'task-edit-input';
+                    editInput.value = task.text;
+                    editInput.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            saveEdit(task.id, editInput.value);
+                        }
+                    });
+
+                    const saveBtn = document.createElement('button');
+                    saveBtn.className = 'task-btn';
+                    saveBtn.textContent = 'Save';
+                    saveBtn.addEventListener('click', function () {
+                        saveEdit(task.id, editInput.value);
+                    });
+
+                    li.appendChild(editInput);
+                    li.appendChild(saveBtn);
+                } else {
+                    const span = document.createElement('span');
+                    span.className = 'task-text' + (task.completed ? ' completed' : '');
+                    span.textContent = task.text;
+
+                    const completeBtn = document.createElement('button');
+                    completeBtn.className = 'task-btn';
+                    completeBtn.textContent = task.completed ? 'Undo' : 'Done';
+                    completeBtn.addEventListener('click', function () {
+                        toggleComplete(task.id);
+                    });
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'task-btn';
+                    editBtn.textContent = 'Edit';
+                    editBtn.addEventListener('click', function () {
+                        startEdit(task.id);
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'task-btn delete-btn';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', function () {
+                        deleteTask(task.id);
+                    });
+
+                    li.appendChild(span);
+                    li.appendChild(completeBtn);
+                    li.appendChild(editBtn);
+                    li.appendChild(deleteBtn);
+                }
+
+                taskList.appendChild(li);
+            });
+        }
+
+        // 11. Initial load
+        loadTasks();
+        renderTasks();
+    </script>
+
+</body>
+</html>
